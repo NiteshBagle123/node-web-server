@@ -7,6 +7,8 @@ const app = express();
 const publicDirectoryFile = path.join(__dirname, '../public');
 const viewsPath = path.join(__dirname, '../templates/views');
 const partialsPath = path.join(__dirname, '../templates/partials');
+const geocode = require('./utils/geocode');
+const forecast = require('./utils/forecast');
 
 // setup handlers engine and views location
 app.set('view engine', 'hbs');
@@ -31,10 +33,45 @@ app.get('/about', (req, res) => {
 });
 
 app.get('/weather', (req, res) => {
-    res.send({
-        forecast: 'cloudy',
-        location: 'Mumbai'
+    let { address } = req.query;
+    if(!address){
+        return res.send([
+            {
+                code: 400,
+                message: 'Address is required'
+            }
+        ])
+    }
+
+    geocode(address, (error, { latitude, longitide, location } = {}) => {
+        if(error){
+            return res.send({ error });
+        }
+        forecast(latitude, longitide, (error, { temperature, precip, description } = {}) => {
+            if(error){
+                return res.send({ error });
+            } else {
+                return res.send({
+                    forecast: `current temperature is ${temperature} degrees out and ${precip}% chance of rain, weather description:${description}`,
+                    location
+                });
+            }
+        })
     });
+});
+
+app.get('/products', (req, res) => {
+    console.log(req.query);
+    const { searchType } = req.query;
+    if(!searchType) {
+        return res.send([{
+            code: 400,
+            message: 'Query paramter is missing'
+        }])
+    }
+    res.send({
+        products: []
+    })
 });
 
 app.get('/help', (req, res) => {
