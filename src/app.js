@@ -3,6 +3,9 @@ const path = require('path');
 const express = require('express');
 const app = express();
 
+// operate at heroku
+const port = process.env.PORT || 3000;
+
 // define paths for express config
 const publicDirectoryFile = path.join(__dirname, '../public');
 const viewsPath = path.join(__dirname, '../templates/views');
@@ -97,6 +100,6 @@ app.all('*', (req, res)=> {
     });
 });
 
-app.listen(3000, () => {
-    console.log('Running on port 3000');
+app.listen(port, () => {
+    console.log(`Running on port:${port}`);
 });
